@@ -1,27 +1,14 @@
 openapi: 3.2.0
 info:
-  title: Swagger Petstore - OpenAPI 3.2
+  title: Swagger myvk.com - OpenAPI 3.2
   description: |-
-    This is a sample Pet Store Server based on the OpenAPI 3.2 specification. You can find out more about
+    This is a homework myvk Server based on the OpenAPI 3.2 specification. You can find out more about
     Swagger at [https://swagger.io](https://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!
     You can now help us improve the API whether it's by making changes to the definition itself or to the code.
     That way, with time, we can improve the API in general, and expose some of the new features in OAS 3.2.
-
-    Some useful links:
-    - [The Pet Store repository](https://github.com/swagger-api/swagger-petstore)
-    - [The source API definition for the Pet Store](https://github.com/swagger-api/swagger-petstore/blob/master/src/main/resources/openapi.yaml)
-    - [OpenAPI 3.2 Specification](https://spec.openapis.org/oas/v3.2.0.html)
-
-  termsOfService: https://swagger.io/terms/
-  contact:
-    email: apiteam@swagger.io
-  license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.13
-externalDocs:
-  description: Find out more about Swagger
-  url: https://swagger.io
 servers:
   - url: https://myvk.com/api/v3
     description: social network server (OAS 3.2)
@@ -45,23 +32,9 @@ paths:
             type: string
       summary: add new friend.
       description: add new user as a friend.
-      requestBody:
-        description: Update an existent pet in the store
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Pet'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Pet'
-        required: true
       responses:
         '200':
           description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pet'
         '400':
           description: Invalid ID supplied
         '404':
@@ -70,10 +43,6 @@ paths:
           description: Validation exception
         default:
           description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
   /deleteFriend:
     post:
       parameters:
@@ -93,23 +62,9 @@ paths:
             type: string
       summary: delete friend.
       description: delete user - friend.
-      requestBody:
-        description: Update an existent profile with friend deletion
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Pet'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Pet'
-        required: true
       responses:
         '200':
           description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Pet'
         '400':
           description: Invalid ID supplied
         '404':
@@ -118,10 +73,6 @@ paths:
           description: Validation exception
         default:
           description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
   /getFriends:
     get:
       summary: get friends of user.
@@ -134,22 +85,27 @@ paths:
           schema:
             type: string
       responses:
-        '200':
-          description: successful operation
+        '201':
+          description: "список друзей получен"
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  friends:
+                    type: array
+                    description: "Массив идентификаторов друзей."
+                    items:
+                      type: string
+                      description: "Уникальный ID друга."
+                    example: ["usr_12345", "usr_67890", "usr_55555"]
         '400':
-          description: Invalid id
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          description: "Неверный формат"
+        '401':
+          description: "Пользователь не авторизован."
   /getProfile:
      get:
       summary: get profile of user.
@@ -178,7 +134,121 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /postData:
+  /postMedia:
+    post:
+      summary: "Загрузка медиафайла"
+      description: "Метод позволяет загрузить изображение или видео вместе с метаданными."
+      operationId: "uploadMedia"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Название или краткое описание медиафайла.
+                  example: "Мой отпуск"
+                category:
+                  type: string
+                  description: "Категория для организации контента."
+                  enum: [vacation, work, nature]
+                  example: vacation
+                file:
+                  type: string
+                  format: binary
+                  description: "Бинарный файл для загрузки (например, JPG, PNG, MP4)."
+              required:
+                - file
+      responses:
+        '201':
+          description: "Файл успешно загружен."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "5f8a21b3e4b01d3a4c8f9b12"
+                      filename:
+                        type: string
+                        example: "photo.jpg"
+                      mimeType:
+                        type: string
+                        example: image/jpeg
+                      sizeBytes:
+                        type: integer
+                        example: 1048576
+                      url:
+                        type: string
+                        example: "https://example.com"
+        '400':
+          description: "Неверный формат запроса или файл слишком большой."
+        '401':
+          description: "Пользователь не авторизован."
+  /postText:
+    post:
+      parameters:
+        - name: user_id
+          in: query
+          description: id of current user
+          required: true
+          explode: true
+          schema:
+            type: string
+      summary: post text.
+      description: post text.
+      requestBody:
+        description: data for post
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  description: text for post
+                  example: "I am happy!"
+                filename:
+                  type: string
+                  description: name of media file
+                  example: "farting_cat.avi"
+            examples:
+              makePost:
+                summary: my new post for feed
+                description: upload text message and media
+                value:
+                  text: "I am happy!"
+                  filename: "farting_cat.avi"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: user_id not found
+        '422':
+          description: Validation exception
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /getFeed:
     post:
       parameters:
         - name: user_id
@@ -192,6 +262,95 @@ paths:
       description: post text.
       requestBody:
         description: user text and media
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Pet'
+        required: true
+      responses:
+        '200':
+          description: get feed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: user_id not found
+        '422':
+          description: Validation exception
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /getChats:
+    post:
+      parameters:
+        - name: user_id
+          in: query
+          description: id of current user
+          required: true
+          explode: true
+          schema:
+            type: string
+      summary: post text.
+      description: post text.
+      requestBody:
+        description: get chats with friends
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Pet'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: user_id not found
+        '422':
+          description: Validation exception
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /putChatMessage:
+    post:
+      parameters:
+        - name: user_id
+          in: query
+          description: id of current user
+          required: true
+          explode: true
+          schema:
+            type: string
+        - name: chat_id
+          in: query
+          description: id of current user
+          required: true
+          explode: true
+          schema:
+            type: string
+      summary: post text.
+      description: post text.
+      requestBody:
+        description: put message in chat with friend
         content:
           application/json:
             schema:
@@ -1329,4 +1488,3 @@ components:
       type: apiKey
       name: api_key
       in: header
-
