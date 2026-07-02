@@ -1,0 +1,63 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table postComments {
+  id integer [primary key]
+  post_id integer
+  user_id integer
+  body text [note: 'comment for post']
+}
+
+Table hashTags {
+  id integer [primary key]
+  post_id integer
+  hashtag varchar
+}
+
+Table userProfiles {
+  id integer [primary key]
+  realationGraph_id integer
+  profile json
+}
+
+Table userChats {
+  id integer [primary key]
+  user_id integer [not null]
+  chat_id integer
+}
+
+Table userPosts {
+  id integer [primary key]
+  title varchar
+  body text [note: 'Content of the post']
+  user_id integer [not null]
+  created_at timestamp
+  media_id integer
+  likes integer
+  views integer
+}
+
+Ref postComments: postComments.post_id > userPosts.id // many-to-one
+
+Ref: hashTags.post_id > userPosts.id
+
+Ref: userProfiles.id > userPosts.user_id
+
+Ref: userProfiles.id > userChats.user_id
+
+Records userProfiles(id, realationGraph_id, profile) {
+  0, 111, '{"name":"Vasya", "description":"fishing is my life"}'
+  1, 222, '{"name":"Kisya", "description":"living is my life"}'
+  2, 333, '{"name":"Vanya", "description":"petting is my life"}'
+  3, 444, '{"name":"Valya", "description":"driving is my life"}'
+}
+
+Records userPosts(id, title, body, user_id, created_at, media_id,likes,views ) {
+  1, "shit", "everything is shit", 0, '2026-01-01', 54545, 2, 0
+}
+
+Records userChats(id, user_id, chat_id) {
+  0, 2, 10
+  1,0, 111
+  2,3, 32
+}
