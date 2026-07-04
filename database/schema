@@ -1,5 +1,10 @@
 // Use DBML to define your database structure
 // Docs: https://dbml.dbdiagram.io/docs
+// master - slave (one sync + async)
+// replication factor 20
+//
+// Sharding:
+// - key based by id
 
 Table postComments {
   id integer [primary key]
